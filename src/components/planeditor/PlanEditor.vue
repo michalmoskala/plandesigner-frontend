@@ -1,34 +1,41 @@
 <template>
   <div>
     <h1>Edycja planu</h1>
-    <h2>{{ monthEntity.name }}</h2>
+    <h2>{{ monthContainer.monthEntity.name }}</h2>
     <div class="plan-tables-container">
       <table>
         <tr>
-          <td v-for="day in monthEntity.days" :key="day.number">
+          <td v-for="day in monthContainer.dayEntities" :key="day.number">
             <table class="day-table">
               <tr>
-                <th :class="{'special-day': day.isSpecial}" >{{ day.number }}</th>
+                <th :class="{'special-day': day.special}" >{{ day.number }}</th>
               </tr>
               <tr>
                 <td>
                   <div v-if="day.shiftOne">
-                    {{ day.shiftOne.workerShortname }}
+                    {{ day.shiftOne.workerId }}
                   </div>
                 </td>
               </tr>
               <tr>
                 <td>
                   <div v-if="day.shiftTwo">
-                    {{ day.shiftTwo.workerShortname }}
+                    {{ day.shiftTwo.workerId }}
                   </div>
                 </td>
               </tr>
               <tr>
                 <td>
                   <div v-if="day.shiftThree">
-                    {{ day.shiftThree.workerShortname }}
-                  </div>
+                    {{ day.shiftThree.workerId }}
+                   </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div v-if="day.shiftFour">
+                    {{ day.shiftFour.workerId }}
+                   </div>
                 </td>
               </tr>
             </table>
@@ -49,25 +56,39 @@ export default {
   },
   data () {
     return {
-      monthEntity: {
-        id: 1,
-        name: 'luty',
-        timestamp: 3,
-        startingDay: 0,
-        days: [
+      monthContainer: {
+        monthEntity: {
+          id: 1,
+          name: 'luty',
+          timestamp: 3,
+          startingDay: 0,
+          days: 31
+        },
+        dayEntities: [
           {
             number: 1
           },
           {
             number: 2,
-            isSpecial: true
+            shiftOne: {
+              id: 3,
+              workerId: 8,
+              monthId: 1,
+              day: 2,
+              whichTime: 1,
+              minutes: 720
+            },
+            shiftTwo: null,
+            shiftThree: null,
+            shiftFour: null,
+            special: true
           },
           {
             number: 3,
             shiftOne: {
               id: 2,
               workerId: 3,
-              workerShortname: 'Dzban',
+              workerShortname: 'Dzan',
               monthId: 1,
               day: 1,
               whichTime: 1,
@@ -79,7 +100,16 @@ export default {
               monthId: 1,
               workerShortname: 'Janurz',
               day: 2,
-              whichTime: 1,
+              whichTime: 3,
+              minutes: 720
+            },
+            shiftFour: {
+              id: 4,
+              workerId: '1',
+              workerShortname: 'pizda',
+              monthId: 1,
+              day: 4,
+              whichTime: 4,
               minutes: 720
             }
           }
@@ -87,7 +117,9 @@ export default {
       }
     }
   },
-  mounted () {
+  beforeMount () {
+    this.$http.get('http://localhost:8069/months/1')
+      .then(response => (this.monthContainer = response))
     alert('Oł yeahs')
   }
 }
