@@ -26,7 +26,7 @@ export default {
         },
         {
           id: 4,
-          name: 'WYLIZANE',
+          name: 'Nieluty',
           timestamp: 2
         }
       ]

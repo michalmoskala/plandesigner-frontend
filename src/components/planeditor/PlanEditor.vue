@@ -109,7 +109,7 @@
 </template>
 
 <script>
-import { Shifts, Workers } from '@/services'
+import { Shifts, Workers, Months } from '@/services'
 import WorkerItem from './WorkerItem'
 
 export default {
@@ -126,18 +126,7 @@ export default {
     return {
       monthContainer: {},
       workers: [],
-      workerList: [
-        {
-          id: 1,
-          name: 'Oli',
-          minutes: 41
-        },
-        {
-          id: 2,
-          name: 'mihu',
-          minutes: 412
-        }
-      ]
+      workerList: []
     }
   },
   methods: {
@@ -168,7 +157,12 @@ export default {
       if (responseWorker.whichTime === 4) {
         dayElo.shiftFour = responseWorker
       }
-      // console.log(responseWorker)
+      const workerList = await Months.getWorkersForMonth(this.id)
+        .then(resp => resp.data)
+
+      if (!workerList) return
+
+      this.workerList = workerList
     },
     async importWorkers () {
       const workers = await Workers.getWorkers()
@@ -177,6 +171,13 @@ export default {
       if (!workers) return
 
       this.workers = workers
+
+      const workerList = await Months.getWorkersForMonth(this.id)
+        .then(resp => resp.data)
+
+      if (!workerList) return
+
+      this.workerList = workerList
     }
   },
   beforeMount () {
