@@ -12,42 +12,110 @@
               </tr>
               <tr>
                 <td>
-                  <div v-if="day.shiftOne">
-                    {{ day.shiftOne.workerId }}
-                  </div>
+                  <b-dropdown variant="link" no-caret>
+                    <template slot="button-content">
+                      <template v-if="day.shiftOne">
+                        {{ day.shiftOne.workerShortName }}
+                      </template>
+                      <template v-else>
+                        &nbsp;
+                      </template>
+                    </template>
+                    <b-dropdown-item
+                      v-for="worker in workers"
+                      :key="worker.id"
+                      @click="huj(worker.id, day.number, 1)"
+                      href="#">
+                      {{ worker.name }}
+                    </b-dropdown-item>
+                  </b-dropdown>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <div v-if="day.shiftTwo">
-                    {{ day.shiftTwo.workerId }}
-                  </div>
+                  <b-dropdown variant="link" no-caret>
+                    <template slot="button-content">
+                      <template v-if="day.shiftTwo">
+                        {{ day.shiftTwo.workerShortName }}
+                      </template>
+                      <template v-else>
+                        &nbsp;
+                      </template>
+                    </template>
+                    <b-dropdown-item
+                      v-for="worker in workers"
+                      :key="worker.id"
+                      @click="huj(worker.id, day.number, 2)"
+                      href="#">
+                      {{ worker.name }}
+                    </b-dropdown-item>
+                  </b-dropdown>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <div v-if="day.shiftThree">
-                    {{ day.shiftThree.workerId }}
-                   </div>
+                  <b-dropdown variant="link" no-caret>
+                    <template slot="button-content">
+                      <template v-if="day.shiftThree">
+                        {{ day.shiftThree.workerShortName }}
+                      </template>
+                      <template v-else>
+                        &nbsp;
+                      </template>
+                    </template>
+                    <b-dropdown-item
+                      v-for="worker in workers"
+                      :key="worker.id"
+                      @click="huj(worker.id, day.number, 3)"
+                      href="#">
+                      {{ worker.name }}
+                    </b-dropdown-item>
+                  </b-dropdown>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <div v-if="day.shiftFour">
-                    {{ day.shiftFour.workerId }}
-                   </div>
+                  <b-dropdown variant="link" no-caret>
+                    <template slot="button-content">
+                      <template v-if="day.shiftFour">
+                        {{ day.shiftFour.workerShortName }}
+                      </template>
+                      <template v-else>
+                        &nbsp;
+                      </template>
+                    </template>
+                    <b-dropdown-item
+                      v-for="worker in workers"
+                      :key="worker.id"
+                      @click="huj(worker.id, day.number, 4)"
+                      href="#">
+                      {{ worker.name }}
+                    </b-dropdown-item>
+                  </b-dropdown>
                 </td>
               </tr>
             </table>
           </td>
         </tr>
       </table>
+      <h1>pracownicy</h1>
+        <div class="worker-list-container">
+          <ul class="worker-list">
+            <worker-item v-for="item in workerList" :key="item.id" :worker="item" />
+          </ul>
+        </div>
     </div>
   </div>
 </template>
 
 <script>
+import { Shifts, Workers } from '@/services'
+import WorkerItem from './WorkerItem'
+
 export default {
+  components: {
+    WorkerItem
+  },
   props: {
     id: {
       type: Number,
@@ -56,71 +124,65 @@ export default {
   },
   data () {
     return {
-      monthContainer: {
-        monthEntity: {
+      monthContainer: {},
+      workers: [],
+      workerList: [
+        {
           id: 1,
-          name: 'luty',
-          timestamp: 3,
-          startingDay: 0,
-          days: 31
+          name: 'Oli',
+          minutes: 41
         },
-        dayEntities: [
-          {
-            number: 1
-          },
-          {
-            number: 2,
-            shiftOne: {
-              id: 3,
-              workerId: 8,
-              monthId: 1,
-              day: 2,
-              whichTime: 1,
-              minutes: 720
-            },
-            shiftTwo: null,
-            shiftThree: null,
-            shiftFour: null,
-            special: true
-          },
-          {
-            number: 3,
-            shiftOne: {
-              id: 2,
-              workerId: 3,
-              workerShortname: 'Dzan',
-              monthId: 1,
-              day: 1,
-              whichTime: 1,
-              minutes: 720
-            },
-            shiftThree: {
-              id: 3,
-              workerId: 8,
-              monthId: 1,
-              workerShortname: 'Janurz',
-              day: 2,
-              whichTime: 3,
-              minutes: 720
-            },
-            shiftFour: {
-              id: 4,
-              workerId: '1',
-              workerShortname: 'pizda',
-              monthId: 1,
-              day: 4,
-              whichTime: 4,
-              minutes: 720
-            }
-          }
-        ]
+        {
+          id: 2,
+          name: 'mihu',
+          minutes: 412
+        }
+      ]
+    }
+  },
+  methods: {
+    async huj (workerId, day, whichTime) {
+      const worker = {
+        workerId,
+        day,
+        whichTime,
+        monthId: this.id,
+        minutes: 720
       }
+      var responseWorker = await Shifts.postShift(worker)
+        .then(resp => resp.data)
+      const dayElo = this.monthContainer.dayEntities.find(d => d.number === day)
+      if (!dayElo) {
+        console.log('day null')
+        return
+      }
+      if (responseWorker.whichTime === 1) {
+        dayElo.shiftOne = responseWorker
+      }
+      if (responseWorker.whichTime === 2) {
+        dayElo.shiftTwo = responseWorker
+      }
+      if (responseWorker.whichTime === 3) {
+        dayElo.shiftThree = responseWorker
+      }
+      if (responseWorker.whichTime === 4) {
+        dayElo.shiftFour = responseWorker
+      }
+      // console.log(responseWorker)
+    },
+    async importWorkers () {
+      const workers = await Workers.getWorkers()
+        .then(resp => resp.data)
+
+      if (!workers) return
+
+      this.workers = workers
     }
   },
   beforeMount () {
     this.$http.get('http://localhost:8069/months/1')
-      .then(response => (this.monthContainer = response))
-    alert('Oł yeahs')
+      .then(response => (this.monthContainer = response.data))
+    this.importWorkers()
   }
 }
 </script>

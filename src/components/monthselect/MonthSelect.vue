@@ -21,13 +21,13 @@ export default {
       monthList: [
         {
           id: 1,
-          name: 'CIPSKO',
-          timestamp: 1243
+          name: 'Luty',
+          timestamp: 1
         },
         {
           id: 4,
           name: 'WYLIZANE',
-          timestamp: 1243
+          timestamp: 2
         }
       ]
     }
