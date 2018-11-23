@@ -1,5 +1,5 @@
 // export const BASE_URL = 'http://localhost:8069'
-export const BASE_URL = 'http://quiet-mountain-98432.herokuapp.com'
+export const BASE_URL = 'https://quiet-mountain-98432.herokuapp.com'
 
 export const DAY_OPTIONS = [
   { value: 1, text: 'pon' },

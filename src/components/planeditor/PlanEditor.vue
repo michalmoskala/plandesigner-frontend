@@ -33,7 +33,7 @@
                       v-for="worker in workers"
                       :key="worker.id"
                       @click="replaceShift(worker.id, day.number, 1, 455)">
-                      {{ worker.name }}
+                      {{ worker.shortname }}
                     </b-dropdown-item>
                   </b-dropdown>
                 </td>
@@ -63,7 +63,7 @@
                       :key="worker.id"
                       @click="replaceShift(worker.id, day.number, 2, 720)"
                       href="#">
-                      {{ worker.name }}
+                      {{ worker.shortname }}
                     </b-dropdown-item>
                   </b-dropdown>
                 </td>
@@ -93,7 +93,7 @@
                       :key="worker.id"
                       @click="replaceShift(worker.id, day.number, 3, 720)"
                       href="#">
-                      {{ worker.name }}
+                      {{ worker.shortname }}
                     </b-dropdown-item>
                   </b-dropdown>
                 </td>
@@ -120,7 +120,7 @@
                       :key="worker.id"
                       @click="replaceShift(worker.id, day.number, 4, 720)"
                       href="#">
-                      {{ worker.name }}
+                      {{ worker.shortname }}
                     </b-dropdown-item>
                   </b-dropdown>
                 </td>
