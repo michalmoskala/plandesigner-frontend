@@ -1,12 +1,18 @@
 <template>
-  <li @click="navigateToPlanEditor(month.id)">
-    <h2>{{ month.name }}</h2>
-    <h5>{{ month.timestamp }}</h5>
+  <li>
+    <h2 @click="navigateToPlanEditor(month.id)">{{ month.name }}</h2>
+    <button @click="removeMonth(month.id)">Usuń miesiąc</button>
+    <put-month-modal @putMonth="putMonth" />
   </li>
 </template>
 
 <script>
+import { Months } from '@/services'
+import PutMonthModal from './PutMonthModal'
 export default {
+  components: {
+    PutMonthModal
+  },
   props: {
     month: {
       type: Object,
@@ -16,6 +22,16 @@ export default {
   methods: {
     navigateToPlanEditor (id) {
       this.$router.push({ name: 'planeditor', params: { id } })
+    },
+    async removeMonth (id) {
+      const result = await Months.removeMonth(id)
+      if (result) {
+        this.$emit('removeMonth', id)
+      }
+    },
+    async putMonth (result) {
+      alert(result)
+      this.month.name = result.name
     }
   }
 }

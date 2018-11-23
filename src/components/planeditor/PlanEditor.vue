@@ -1,13 +1,15 @@
 <template>
   <div>
-    <h1>Edycja planu</h1>
-    <h2>{{ monthContainer.monthEntity.name }}</h2>
+    <!-- <h5>Edycja planu</h5> -->
+    <h5>{{ monthContainer.monthEntity.name }}</h5>
+    <put-holiday-modal @putHoliday="putHoliday" :workers="this.workers" />
+    <put-offset-modal @putOffset="putOffset" />
     <div class="plan-tables-container">
       <table>
         <tr>
           <td v-for="day in monthContainer.dayEntities" :key="day.number">
             <table class="day-table">
-              <tr>
+              <tr @click="putSpecialDay(day.number)">
                 <th :class="{'special-day': day.special}" >{{ day.number }}</th>
               </tr>
               <tr>
@@ -21,18 +23,23 @@
                         &nbsp;
                       </template>
                     </template>
+                    <b-dropdown-item @click="removeShift(day, 1)">
+                      USUN</b-dropdown-item>
+                    <b-dropdown-item @click="exclude(day, 1)">
+                      X
+                    </b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
                     <b-dropdown-item
                       v-for="worker in workers"
                       :key="worker.id"
-                      @click="huj(worker.id, day.number, 1)"
-                      href="#">
+                      @click="replaceShift(worker.id, day.number, 1, 455)">
                       {{ worker.name }}
                     </b-dropdown-item>
                   </b-dropdown>
                 </td>
               </tr>
               <tr>
-                <td>
+                <td :class="{'special-color': day.shiftTwo && day.shiftTwo.specialColor}">
                   <b-dropdown variant="link" no-caret>
                     <template slot="button-content">
                       <template v-if="day.shiftTwo">
@@ -42,10 +49,19 @@
                         &nbsp;
                       </template>
                     </template>
+                    <b-dropdown-item @click="putSpecialColor(day.shiftTwo.id)">
+                      Zmień dlugość</b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
+                    <b-dropdown-item @click="removeShift(day, 2)">
+                      Usuń</b-dropdown-item>
+                    <b-dropdown-item @click="exclude(day, 2)">
+                      X
+                    </b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
                     <b-dropdown-item
                       v-for="worker in workers"
                       :key="worker.id"
-                      @click="huj(worker.id, day.number, 2)"
+                      @click="replaceShift(worker.id, day.number, 2, 720)"
                       href="#">
                       {{ worker.name }}
                     </b-dropdown-item>
@@ -53,7 +69,7 @@
                 </td>
               </tr>
               <tr>
-                <td>
+                <td :class="{'special-color': day.shiftThree && day.shiftThree.specialColor}">
                   <b-dropdown variant="link" no-caret>
                     <template slot="button-content">
                       <template v-if="day.shiftThree">
@@ -63,10 +79,19 @@
                         &nbsp;
                       </template>
                     </template>
+                    <b-dropdown-item @click="putSpecialColor(day.shiftThree.id)">
+                      Zmień dlugość</b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
+                    <b-dropdown-item @click="removeShift(day, 3)">
+                      Usuń</b-dropdown-item>
+                    <b-dropdown-item @click="exclude(day, 3)">
+                      X
+                    </b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
                     <b-dropdown-item
                       v-for="worker in workers"
                       :key="worker.id"
-                      @click="huj(worker.id, day.number, 3)"
+                      @click="replaceShift(worker.id, day.number, 3, 720)"
                       href="#">
                       {{ worker.name }}
                     </b-dropdown-item>
@@ -84,10 +109,16 @@
                         &nbsp;
                       </template>
                     </template>
+                    <b-dropdown-item @click="removeShift(day, 4)">
+                      USUN</b-dropdown-item>
+                    <b-dropdown-item @click="exclude(day, 4)">
+                      X
+                    </b-dropdown-item>
+                    <b-dropdown-divider></b-dropdown-divider>
                     <b-dropdown-item
                       v-for="worker in workers"
                       :key="worker.id"
-                      @click="huj(worker.id, day.number, 4)"
+                      @click="replaceShift(worker.id, day.number, 4, 720)"
                       href="#">
                       {{ worker.name }}
                     </b-dropdown-item>
@@ -98,23 +129,28 @@
           </td>
         </tr>
       </table>
-      <h1>pracownicy</h1>
+      <h1></h1>
         <div class="worker-list-container">
           <ul class="worker-list">
             <worker-item v-for="item in workerList" :key="item.id" :worker="item" />
           </ul>
         </div>
     </div>
+    <button @click="doCalc()">Uzupełnij miesiąc</button>
   </div>
 </template>
 
 <script>
-import { Shifts, Workers, Months } from '@/services'
+import { Shifts, Workers, Months, Blocks } from '@/services'
 import WorkerItem from './WorkerItem'
+import PutHolidayModal from './PutHolidayModal'
+import PutOffsetModal from './PutOffsetModal'
 
 export default {
   components: {
-    WorkerItem
+    WorkerItem,
+    PutHolidayModal,
+    PutOffsetModal
   },
   props: {
     id: {
@@ -130,13 +166,113 @@ export default {
     }
   },
   methods: {
-    async huj (workerId, day, whichTime) {
+    async doCalc () {
+      var responseAlgo = await Months.getAlgo(this.id)
+        .then(resp => resp.data)
+      if (!responseAlgo) {
+        alert('Błąd algorytmu. Skontaktuj się z administratorem.')
+        return
+      }
+      await Months.getMonth(this.id)
+        .then(response => (this.monthContainer = response.data))
+      this.importWorkers()
+    },
+    async putHoliday () {
+      const workerList = await Months.getWorkersForMonth(this.id)
+        .then(resp => resp.data)
+
+      if (!workerList) return
+
+      this.workerList = workerList
+    },
+    async putOffset (offset) {
+      const offsetEntity = {
+        monthId: this.id,
+        workerId: offset.workerId,
+        minutes: (offset.hours * 60 + offset.minutes) * offset.negative
+      }
+      var responseOffset = await Months.putOffset(offsetEntity)
+        .then(resp => resp.data)
+      if (!responseOffset) {
+        console.log('ff null')
+        return
+      }
+      const workerList = await Months.getWorkersForMonth(this.id)
+        .then(resp => resp.data)
+
+      if (!workerList) return
+
+      this.workerList = workerList
+    },
+    async exclude (day, whichTime) {
+      const block = {
+        day: day.number,
+        whichTime: whichTime,
+        monthId: this.id
+      }
+      var responseBlock = await Blocks.postBlock(block)
+        .then(resp => resp.data)
+      if (!responseBlock) {
+        console.log('day null')
+        return
+      }
+      if (responseBlock.whichTime === 1) {
+        day.shiftOne = responseBlock
+      }
+      if (responseBlock.whichTime === 2) {
+        day.shiftTwo = responseBlock
+      }
+      if (responseBlock.whichTime === 3) {
+        day.shiftThree = responseBlock
+      }
+      if (responseBlock.whichTime === 4) {
+        day.shiftFour = responseBlock
+      }
+      const workerList = await Months.getWorkersForMonth(this.id)
+        .then(resp => resp.data)
+
+      if (!workerList) return
+
+      this.workerList = workerList
+    },
+    async removeShift (day, whichTime) {
+      const shift = {
+        day: day.number,
+        whichTime: whichTime,
+        monthId: this.id
+      }
+      var responseShifts = await Shifts.removeShift(shift)
+        .then(resp => resp.data)
+      if (!responseShifts) {
+        console.log('day null')
+        return
+      }
+      if (whichTime === 1) {
+        day.shiftOne = null
+      }
+      if (whichTime === 2) {
+        day.shiftTwo = null
+      }
+      if (whichTime === 3) {
+        day.shiftThree = null
+      }
+      if (whichTime === 4) {
+        day.shiftFour = null
+      }
+      const workerList = await Months.getWorkersForMonth(this.id)
+        .then(resp => resp.data)
+
+      if (!workerList) return
+
+      this.workerList = workerList
+    },
+    async replaceShift (workerId, day, whichTime, minutes) {
       const worker = {
         workerId,
         day,
         whichTime,
         monthId: this.id,
-        minutes: 720
+        minutes
       }
       var responseWorker = await Shifts.postShift(worker)
         .then(resp => resp.data)
@@ -178,12 +314,48 @@ export default {
       if (!workerList) return
 
       this.workerList = workerList
+    },
+    async putSpecialDay (day) {
+      const todo1 = {
+        day
+      }
+      await Months.putSpecialDay(this.id, todo1)
+        .then(resp => resp.data)
+
+      this.monthContainer.dayEntities[day - 1].special = !this.monthContainer.dayEntities[day - 1].special
+
+      const workerList = await Months.getWorkersForMonth(this.id)
+        .then(resp => resp.data)
+
+      if (!workerList) return
+
+      this.workerList = workerList
+    },
+    async putSpecialColor (shiftId) {
+      var responseColor = await Shifts.putSpecialColor(shiftId)
+        .then(resp => resp.data)
+      if (!responseColor) {
+        return
+      }
+      if (responseColor.whichTime === 2) {
+        this.monthContainer.dayEntities[responseColor.day - 1].shiftTwo.specialColor = !this.monthContainer.dayEntities[responseColor.day - 1].shiftTwo.specialColor
+      }
+      if (responseColor.whichTime === 3) {
+        this.monthContainer.dayEntities[responseColor.day - 1].shiftThree.specialColor = !this.monthContainer.dayEntities[responseColor.day - 1].shiftThree.specialColor
+      }
+      const workerList = await Months.getWorkersForMonth(this.id)
+        .then(resp => resp.data)
+
+      if (!workerList) return
+
+      this.workerList = workerList
     }
   },
-  beforeMount () {
-    this.$http.get('http://localhost:8069/months/1')
+  async beforeMount () {
+    await Months.getMonth(this.id)
       .then(response => (this.monthContainer = response.data))
     this.importWorkers()
+    PutOffsetModal.twojstary()
   }
 }
 </script>
@@ -199,5 +371,9 @@ export default {
 
 .special-day {
   background: red
+}
+
+.special-color{
+  background: lightblue
 }
 </style>

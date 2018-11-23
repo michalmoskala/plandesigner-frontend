@@ -1,7 +1,11 @@
 <template>
   <li>
-    <h5>{{ worker.name, worker.minutes }}</h5>
-    <h5>{{ worker.minutes}} </h5>
+    <h6>{{ worker.name + "(" + worker.shortname + ")--" + worker.id }}</h6>
+    <h6>{{ 'W sumie: ' + ~~(worker.minutes/60) + ':' + worker.minutes%60 +' | '+
+     'Wypracowanych: ' + ~~(worker.workedMinutes/60) + ':' + worker.workedMinutes%60 +' | '+
+     'W dniach specjalnych: ' + ~~(worker.weekendMinutes/60) + ':' + worker.weekendMinutes%60 +' | ' +
+      'Offset: ' + ~~(worker.offsetMinutes/60) + ':' + worker.offsetMinutes%60 +' | '+
+       'Dni na urlopie: ' + worker.daysOnHoliday + " ("+ 'W godzinach:' + ~~((worker.daysOnHoliday*455)/60) + ':' + ((worker.daysOnHoliday*455)%60) + ")" }} </h6>
   </li>
 </template>
 
@@ -18,7 +22,7 @@ export default {
 
 <style lang="scss" scoped>
 li {
-  background: gray;
+  background: #FFE5B4;
   margin: 8px;
   padding: 8px;
 }
