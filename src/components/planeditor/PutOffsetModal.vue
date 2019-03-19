@@ -4,7 +4,7 @@
   <b-modal
     id="putOffsetModal"
     ref="putOffsetModal"
-    title="Bootstrap-Vue"
+    title="Dodaj Offset"
     @ok="handleOk"
     @hidden="handleHidden"
   >
