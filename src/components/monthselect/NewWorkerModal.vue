@@ -4,7 +4,7 @@
   <b-modal
     id="newWorkerModal"
     ref="newWorkerModal"
-    title="Bootstrap-Vue"
+    title="Dodaj pracownika"
     @ok="handleOk"
     @hidden="handleHidden"
   >

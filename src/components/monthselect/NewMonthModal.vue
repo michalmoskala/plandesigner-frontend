@@ -1,10 +1,10 @@
 <template>
 <div>
-  <b-btn v-b-modal.newMonthModal>Dodaj miesiac</b-btn>
+  <b-btn v-b-modal.newMonthModal>Dodaj Miesiac</b-btn>
   <b-modal
     id="newMonthModal"
     ref="newMonthModal"
-    title="Bootstrap-Vue"
+    title="Dodaj miesiąc"
     @ok="handleOk"
     @hidden="handleHidden"
   >

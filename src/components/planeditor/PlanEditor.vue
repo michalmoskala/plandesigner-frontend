@@ -2,8 +2,8 @@
   <div>
     <!-- <h5>Edycja planu</h5> -->
     <h5>{{ monthContainer.monthEntity.name }}</h5>
-    <put-holiday-modal @putHoliday="putHoliday" :workers="this.workers" />
-    <put-offset-modal @putOffset="putOffset" />
+    <put-holiday-modal @putHoliday="putHoliday" :workers="this.workers" :monthId="this.id" />
+    <put-offset-modal @putOffset="putOffset" :workers="this.workers" :monthId="this.id" />
     <div class="plan-tables-container">
       <table>
         <tr>
@@ -11,6 +11,9 @@
             <table class="day-table">
               <tr @click="putSpecialDay(day.number)">
                 <th :class="{'special-day': day.special}" >{{ day.number }}</th>
+              </tr>
+              <tr>
+                <th>{{ day.workersOnHoliday }}</th>
               </tr>
               <tr>
                 <td>
@@ -93,7 +96,7 @@
                       :key="worker.id"
                       @click="replaceShift(worker.id, day.number, 3, 720)"
                       href="#">
-                      {{ worker.shortname }}
+                      {{ worker.name }}
                     </b-dropdown-item>
                   </b-dropdown>
                 </td>
@@ -120,7 +123,7 @@
                       :key="worker.id"
                       @click="replaceShift(worker.id, day.number, 4, 720)"
                       href="#">
-                      {{ worker.shortname }}
+                      {{ worker.name }}
                     </b-dropdown-item>
                   </b-dropdown>
                 </td>
@@ -185,18 +188,7 @@ export default {
 
       this.workerList = workerList
     },
-    async putOffset (offset) {
-      const offsetEntity = {
-        monthId: this.id,
-        workerId: offset.workerId,
-        minutes: (offset.hours * 60 + offset.minutes) * offset.negative
-      }
-      var responseOffset = await Months.putOffset(offsetEntity)
-        .then(resp => resp.data)
-      if (!responseOffset) {
-        console.log('ff null')
-        return
-      }
+    async putOffset () {
       const workerList = await Months.getWorkersForMonth(this.id)
         .then(resp => resp.data)
 
@@ -355,7 +347,6 @@ export default {
     await Months.getMonth(this.id)
       .then(response => (this.monthContainer = response.data))
     this.importWorkers()
-    PutOffsetModal.twojstary()
   }
 }
 </script>

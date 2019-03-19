@@ -25,6 +25,5 @@ li {
   background: #FFE5B4;
   margin: 8px;
   padding: 8px;
-  align-content: left;
 }
 </style>

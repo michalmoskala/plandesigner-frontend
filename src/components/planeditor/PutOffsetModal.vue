@@ -11,7 +11,7 @@
     <form @submit.prevent="submit">
 
       <b-form-group label="Kto">
-        <b-form-select v-model="form.workerId" :options="workers.name" />
+        <b-form-select value-field="id" text-field="name" v-model="form.workerId"  :options="workers" />
       </b-form-group>
 
        <b-form-group label="Ile godzin">
@@ -33,7 +33,7 @@
 
 <script>
 import { HOURS_OPTIONS, MINUTES_OPTIONS } from '@/constants'
-// import { Workers } from '@/services'
+import { Months, Workers } from '@/services'
 
 const formDefault = {
   workerId: null,
@@ -43,9 +43,18 @@ const formDefault = {
 }
 
 export default {
+  props: {
+    workers: {
+      type: Array,
+      required: true
+    },
+    monthId: {
+      type: Number,
+      required: true
+    }
+  },
   data () {
     return {
-      workers: [],
       MINUTES_OPTIONS,
       HOURS_OPTIONS,
       form: { ...formDefault }
@@ -56,11 +65,26 @@ export default {
       evt.preventDefault()
       this.submit()
     },
-    async twojstary () {
+    async beforeMount () {
       alert('bulwary')
+      await Workers.getWorkers()
+        .then(response => (this.workers = response.data))
     },
     async submit () {
+      const offsetEntity = {
+        monthId: this.monthId,
+        workerId: this.form.workerId,
+        minutes: (this.form.hours * 60 + this.form.minutes) * this.form.negative
+      }
+      console.log(offsetEntity.monthId)
+      var responseOffset = await Months.putOffset(this.monthId, offsetEntity)
+        .then(resp => resp.data)
+      if (!responseOffset) {
+        console.log('ff null')
+        return
+      }
       this.$emit('putOffset', this.formDefault)
+      this.$refs.putOffsetModal.hide()
     },
     handleHidden () {
       this.form = { ...formDefault }

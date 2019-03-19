@@ -4,7 +4,7 @@
   <b-modal
     id="putHolidayModal"
     ref="putHolidayModal"
-    title="Bootstrap-Vue"
+    title="Dodaj urlop"
     @ok="handleOk"
     @hidden="handleHidden"
   >
@@ -47,6 +47,10 @@ export default {
     workers: {
       type: Array,
       required: true
+    },
+    monthId: {
+      type: Number,
+      required: true
     }
   },
   data () {
@@ -68,19 +72,21 @@ export default {
     },
     async submit () {
       const holidayEntity = {
-        monthId: 4,
+        monthId: this.monthId,
         workerId: this.form.workerId,
         days: this.form.days,
         firstDay: this.form.firstDay,
         lastDay: this.form.lastDay
       }
-      var responseHoliday = await Months.putHoliday(holidayEntity)
+      console.log(holidayEntity.monthId)
+      var responseHoliday = await Months.putHoliday(this.monthId, holidayEntity)
         .then(resp => resp.data)
       if (!responseHoliday) {
         console.log('ff null')
         return
       }
       this.$emit('putHoliday', this.formDefault)
+      this.$refs.putHolidayModal.hide()
     },
     handleHidden () {
       this.form = { ...formDefault }
