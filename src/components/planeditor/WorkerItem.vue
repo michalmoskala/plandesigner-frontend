@@ -2,7 +2,7 @@
   <li>
     <h6>{{ worker.name + " " + worker.shortname + '-----' +
      'W sumie: ' + ~~(worker.minutes/60) + ':' + worker.minutes%60 +' | '+
-     'Wypracowanych: ' + ~~(worker.workedMinutes/60) + ':' + worker.workedMinutes%60 +' | '+
+     'Czas pracy: ' + ~~((worker.workedMinutes+worker.daysOnHoliday*455)/60) + ':' + (worker.workedMinutes+worker.daysOnHoliday*455)%60 +' | '+
      'W dniach specjalnych: ' + ~~(worker.weekendMinutes/60) + ':' + worker.weekendMinutes%60 +' | ' +
       'Offset: ' + ~~(worker.offsetMinutes/60) + ':' + worker.offsetMinutes%60 +' | '+
        'Dni na urlopie: ' + worker.daysOnHoliday + " ("+ 'W godzinach:' + ~~((worker.daysOnHoliday*455)/60) + ':' + ((worker.daysOnHoliday*455)%60) + ")" }} </h6>

@@ -1,10 +1,10 @@
 <template>
 <div>
-  <b-btn v-b-modal.putOffsetModal>Dodaj offset</b-btn>
+  <b-btn v-b-modal.postHolidayModal>Dodaj urlop</b-btn>
   <b-modal
-    id="putOffsetModal"
-    ref="putOffsetModal"
-    title="Dodaj Offset"
+    id="postHolidayModal"
+    ref="postHolidayModal"
+    title="Dodaj urlop"
     @ok="handleOk"
     @hidden="handleHidden"
   >
@@ -14,16 +14,16 @@
         <b-form-select value-field="id" text-field="name" v-model="form.workerId"  :options="workers" />
       </b-form-group>
 
-       <b-form-group label="Ile godzin">
-        <b-form-select v-model="form.hours" :options="HOURS_OPTIONS" />
+       <b-form-group label="Ile dni">
+        <b-form-select v-model="form.days" :options="DAY_0_31_OPTIONS" />
       </b-form-group>
 
-      <b-form-group label="Ile minut">
-        <b-form-select v-model="form.minutes" :options="MINUTES_OPTIONS" />
+      <b-form-group label="Dzień rozpoczynający">
+        <b-form-select v-model="form.firstDay" :options="DAY_31_OPTIONS" />
       </b-form-group>
 
-      <b-form-group label="Czy ujemne">
-        <b-form-checkbox v-model="form.negative" value=-1 unchecked-value=1 />
+      <b-form-group label="Dzień ostatni">
+        <b-form-select v-model="form.lastDay" :options="DAY_31_OPTIONS" />
       </b-form-group>
 
     </form>
@@ -32,14 +32,14 @@
 </template>
 
 <script>
-import { HOURS_OPTIONS, MINUTES_OPTIONS } from '@/constants'
+import { DAY_0_31_OPTIONS, DAY_31_OPTIONS } from '@/constants'
 import { Months, Workers } from '@/services'
 
 const formDefault = {
   workerId: null,
-  hours: null,
-  minutes: null,
-  negative: null
+  days: null,
+  firstDay: null,
+  lastDay: null
 }
 
 export default {
@@ -55,8 +55,8 @@ export default {
   },
   data () {
     return {
-      MINUTES_OPTIONS,
-      HOURS_OPTIONS,
+      DAY_0_31_OPTIONS,
+      DAY_31_OPTIONS,
       form: { ...formDefault }
     }
   },
@@ -71,23 +71,21 @@ export default {
         .then(response => (this.workers = response.data))
     },
     async submit () {
-      const offsetEntity = {
+      const holidayEntity = {
         monthId: this.monthId,
         workerId: this.form.workerId,
-        minutes: (this.form.hours * 60 + this.form.minutes)
+        days: this.form.days,
+        firstDay: this.form.firstDay,
+        lastDay: this.form.lastDay
       }
-      if (this.form.negative) {
-        offsetEntity.minutes = -offsetEntity.minutes
-      }
-      console.log(offsetEntity.monthId)
-      var responseOffset = await Months.putOffset(this.monthId, offsetEntity)
+      console.log(holidayEntity.monthId)
+      var responseHoliday = await Months.postHoliday(this.monthId, holidayEntity)
         .then(resp => resp.data)
-      if (!responseOffset) {
+      if (!responseHoliday) {
         console.log('ff null')
-        return
       }
-      this.$emit('putOffset', this.formDefault)
-      this.$refs.putOffsetModal.hide()
+      this.$emit('postHoliday', this.formDefault)
+      this.$refs.postHolidayModal.hide()
     },
     handleHidden () {
       this.form = { ...formDefault }

@@ -23,11 +23,17 @@ export default {
   putHoliday (id, holiday) {
     return axios.put(`${BASE_URL}/months/${id}/holidays`, holiday)
   },
+  postHoliday (id, holiday) {
+    return axios.post(`${BASE_URL}/months/${id}/holidays`, holiday)
+  },
   putOffset (id, offset) {
     return axios.put(`${BASE_URL}/months/${id}/offsets`, offset)
   },
   getAlgo (id) {
     return axios.get(`${BASE_URL}/months/${id}/penalties`)
+  },
+  getHolidaysForMonth (id) {
+    return axios.get(`${BASE_URL}/months/${id}/holidays`)
   }
 
 }

@@ -2,8 +2,10 @@
   <div>
     <!-- <h5>Edycja planu</h5> -->
     <h5>{{ monthContainer.monthEntity.name }}</h5>
-    <put-holiday-modal @putHoliday="putHoliday" :workers="this.workers" :monthId="this.id" />
+    <!-- <put-holiday-modal @putHoliday="putHoliday" :workers="this.workers" :monthId="this.id" /> -->
     <put-offset-modal @putOffset="putOffset" :workers="this.workers" :monthId="this.id" />
+    <post-holiday-modal @postHoliday="postHoliday" :workers="this.workers" :monthId="this.id" />
+    <delete-holiday-modal @deleteHoliday="deleteHoliday" :holidays="this.holidays" :monthId="this.id" />
     <div class="plan-tables-container">
       <table>
         <tr>
@@ -11,9 +13,6 @@
             <table class="day-table">
               <tr @click="putSpecialDay(day.number)">
                 <th :class="{'special-day': day.special}" >{{ day.number }}</th>
-              </tr>
-              <tr>
-                <th>{{ day.workersOnHoliday }}</th>
               </tr>
               <tr>
                 <td>
@@ -96,7 +95,7 @@
                       :key="worker.id"
                       @click="replaceShift(worker.id, day.number, 3, 720)"
                       href="#">
-                      {{ worker.name }}
+                      {{ worker.shortname }}
                     </b-dropdown-item>
                   </b-dropdown>
                 </td>
@@ -123,10 +122,13 @@
                       :key="worker.id"
                       @click="replaceShift(worker.id, day.number, 4, 720)"
                       href="#">
-                      {{ worker.name }}
+                      {{ worker.shortname }}
                     </b-dropdown-item>
                   </b-dropdown>
                 </td>
+              </tr>
+              <tr>
+                <td style="white-space: nowrap">{{ day.workersOnHoliday }}</td>
               </tr>
             </table>
           </td>
@@ -147,13 +149,17 @@
 import { Shifts, Workers, Months, Blocks } from '@/services'
 import WorkerItem from './WorkerItem'
 import PutHolidayModal from './PutHolidayModal'
+import PostHolidayModal from './PostHolidayModal'
 import PutOffsetModal from './PutOffsetModal'
+import DeleteHolidayModal from './DeleteHolidayModal'
 
 export default {
   components: {
     WorkerItem,
     PutHolidayModal,
-    PutOffsetModal
+    PostHolidayModal,
+    PutOffsetModal,
+    DeleteHolidayModal
   },
   props: {
     id: {
@@ -165,7 +171,8 @@ export default {
     return {
       monthContainer: {},
       workers: [],
-      workerList: []
+      workerList: [],
+      holidays: []
     }
   },
   methods: {
@@ -187,6 +194,32 @@ export default {
       if (!workerList) return
 
       this.workerList = workerList
+
+      await Months.getMonth(this.id)
+        .then(response => (this.monthContainer = response.data))
+      this.importWorkers()
+    },
+    async postHoliday () {
+      await Months.getMonth(this.id)
+        .then(response => (this.monthContainer = response.data))
+      this.importWorkers()
+      // const workerList = await Months.getWorkersForMonth(this.id)
+      //   .then(resp => resp.data)
+
+      // if (!workerList) return
+
+      // this.workerList = workerList
+    },
+    async deleteHoliday () {
+      await Months.getMonth(this.id)
+        .then(response => (this.monthContainer = response.data))
+      this.importWorkers()
+      // const workerList = await Months.getWorkersForMonth(this.id)
+      //   .then(resp => resp.data)
+
+      // if (!workerList) return
+
+      // this.workerList = workerList
     },
     async putOffset () {
       const workerList = await Months.getWorkersForMonth(this.id)
@@ -306,6 +339,13 @@ export default {
       if (!workerList) return
 
       this.workerList = workerList
+
+      const holidays = await Months.getHolidaysForMonth(this.id)
+        .then(resp => resp.data)
+
+      if (!holidays) return
+
+      this.holidays = holidays
     },
     async putSpecialDay (day) {
       const todo1 = {
